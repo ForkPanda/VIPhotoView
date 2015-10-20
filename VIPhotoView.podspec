@@ -20,6 +20,6 @@ Pod::Spec.new do |s|
     :git => 'https://github.com/forkpanda/VIPhotoView.git',
     :tag => s.version.to_s
   }
-  s.source_files = 'VIPhotoView/*.{h,m}' 
+  s.source_files = 'VIPhotoViewDemo/VIPhotoView/*.{h,m}' 
   s.requires_arc = true   
 end
