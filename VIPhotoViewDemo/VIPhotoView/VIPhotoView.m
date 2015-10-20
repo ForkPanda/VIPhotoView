@@ -69,7 +69,6 @@
 {
     self = [super initWithCoder:coder];
     if (self) {
-        NSLog(@"%@", self.frame);
         [self config];
     }
     return self;
@@ -145,8 +144,10 @@
 
 #pragma mark - GestureRecognizer
 
-- (void)tapHandler:(UITapGestureRecognizer *)recognizer
+- (void)doubleTapHandler:(UITapGestureRecognizer *)recognizer
 {
+    NSLog(@"doubletap");
+
     if (self.zoomScale > self.minimumZoomScale) {
         [self setZoomScale:self.minimumZoomScale animated:YES];
     } else if (self.zoomScale < self.maximumZoomScale) {
@@ -154,6 +155,14 @@
         CGRect zoomToRect = CGRectMake(0, 0, 50, 50);
         zoomToRect.origin = CGPointMake(location.x - CGRectGetWidth(zoomToRect)/2, location.y - CGRectGetHeight(zoomToRect)/2);
         [self zoomToRect:zoomToRect animated:YES];
+    }
+}
+
+- (void)tapHandler:(UITapGestureRecognizer *)recognizer
+{
+    NSLog(@"tap");
+    if (self.actionBlock) {
+        self.actionBlock(MTPhotoActionTypeTap, nil);
     }
 }
 
@@ -198,9 +207,14 @@
         _containerView.backgroundColor = [UIColor clearColor];
         [self addSubview:_containerView];
         
-        UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHandler:)];
-        tapGestureRecognizer.numberOfTapsRequired = 2;
-        [_containerView addGestureRecognizer:tapGestureRecognizer];
+        UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapHandler:)];
+        doubleTap.numberOfTapsRequired = 2;
+        [_containerView addGestureRecognizer:doubleTap];
+        
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHandler:)];
+        tap.numberOfTapsRequired = 1;
+        [tap requireGestureRecognizerToFail:doubleTap];
+        [_containerView addGestureRecognizer:tap];
     }
     return _containerView;
 }

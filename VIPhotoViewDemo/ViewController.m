@@ -18,10 +18,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+
     UIImage *image = [UIImage imageNamed:@"test.jpg"];
     self.scroll.image = image;
-    
+    self.scroll.maxZoomScale = @5;
 }
 
 - (void)viewDidLayoutSubviews
