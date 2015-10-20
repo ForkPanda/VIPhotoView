@@ -62,48 +62,35 @@
 
 @implementation VIPhotoView
 
+@synthesize minZoomScale = _minZoomScale;
+@synthesize maxZoomScale = _maxZoomScale;
 
-- (instancetype)initWithFrame:(CGRect)frame andImage:(UIImage *)image
+- (instancetype)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
+    if (self) {
+        NSLog(@"%@", self.frame);
+        [self config];
+    }
+    return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.delegate = self;
-        self.bouncesZoom = YES;
-        
-        // Add container view
-        UIView *containerView = [[UIView alloc] initWithFrame:self.bounds];
-        containerView.backgroundColor = [UIColor clearColor];
-        [self addSubview:containerView];
-        _containerView = containerView;
-        
-        // Add image view
-        UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-        imageView.frame = containerView.bounds;
-        imageView.contentMode = UIViewContentModeScaleAspectFit;
-        [containerView addSubview:imageView];
-        _imageView = imageView;
-        
-        // Fit container view's size to image size
-        CGSize imageSize = imageView.contentSize;
-        self.containerView.frame = CGRectMake(0, 0, imageSize.width, imageSize.height);
-        imageView.bounds = CGRectMake(0, 0, imageSize.width, imageSize.height);
-        imageView.center = CGPointMake(imageSize.width / 2, imageSize.height / 2);
-        
-        self.contentSize = imageSize;
-        self.minSize = imageSize;
-        
-        
-        [self setMaxMinZoomScale];
-        
-        // Center containerView by set insets
-        [self centerContent];
-        
-        // Setup other events
-        [self setupGestureRecognizer];
-        [self setupRotationNotification];
+        [self config];
     }
-    
     return self;
+}
+
+- (void)config
+{
+    self.delegate = self;
+    self.bouncesZoom = YES;
+    
+    [self setZoomScale];
+    [self setupRotationNotification];
 }
 
 - (void)layoutSubviews
@@ -144,13 +131,6 @@
                                                object:nil];
 }
 
-- (void)setupGestureRecognizer
-{
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHandler:)];
-    tapGestureRecognizer.numberOfTapsRequired = 2;
-    [_containerView addGestureRecognizer:tapGestureRecognizer];
-}
-
 #pragma mark - UIScrollViewDelegate
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
@@ -186,13 +166,10 @@
 
 #pragma mark - Helper
 
-- (void)setMaxMinZoomScale
+- (void)setZoomScale
 {
-    CGSize imageSize = self.imageView.image.size;
-    CGSize imagePresentationSize = self.imageView.contentSize;
-    CGFloat maxScale = MAX(imageSize.height / imagePresentationSize.height, imageSize.width / imagePresentationSize.width);
-    self.maximumZoomScale = MAX(1, maxScale); // Should not less than 1
-    self.minimumZoomScale = 1.0;
+    self.maxZoomScale = @2;
+    self.minZoomScale = @1;
 }
 
 - (void)centerContent
@@ -211,6 +188,85 @@
     left -= frame.origin.x;
     
     self.contentInset = UIEdgeInsetsMake(top, left, top, left);
+}
+
+#pragma mark - getter & setter
+- (UIView *)containerView
+{
+    if (!_containerView) {
+        _containerView = [[UIView alloc] initWithFrame:self.bounds];
+        _containerView.backgroundColor = [UIColor clearColor];
+        [self addSubview:_containerView];
+        
+        UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHandler:)];
+        tapGestureRecognizer.numberOfTapsRequired = 2;
+        [_containerView addGestureRecognizer:tapGestureRecognizer];
+    }
+    return _containerView;
+}
+
+- (UIImageView *)imageView
+{
+    if (!_imageView) {
+        // Add image view
+        _imageView = [[UIImageView alloc] init];
+        _imageView.frame = self.containerView.bounds;
+        _imageView.contentMode = UIViewContentModeScaleAspectFit;
+        [self.containerView addSubview:_imageView];
+    }
+    return _imageView;
+}
+
+- (void)setImage:(UIImage *)image
+{
+    self.imageView.image = image;
+    
+    // Fit container view's size to image size
+    CGSize imageSize = self.imageView.contentSize;
+    self.containerView.frame = CGRectMake(0, 0, imageSize.width, imageSize.height);
+    self.imageView.bounds = CGRectMake(0, 0, imageSize.width, imageSize.height);
+    self.imageView.center = CGPointMake(imageSize.width / 2, imageSize.height / 2);
+    
+    self.contentSize = imageSize;
+    self.minSize = imageSize;
+    [self centerContent];
+    
+}
+
+- (UIImage *)image
+{
+    return self.imageView.image;
+}
+
+- (NSNumber *)maxZoomScale
+{
+    if (!_maxZoomScale) {
+        CGSize imageSize = self.imageView.image.size;
+        CGSize imagePresentationSize = self.imageView.contentSize;
+        CGFloat maxScale = MAX(imageSize.height / imagePresentationSize.height, imageSize.width / imagePresentationSize.width);
+        _maxZoomScale = @(MAX(1, maxScale));
+    }
+    return _maxZoomScale;
+}
+
+- (void)setMaxZoomScale:(NSNumber *)maxZoomScale
+{
+    _maxZoomScale = maxZoomScale;
+    self.maximumZoomScale = self.maxZoomScale.floatValue;
+}
+
+- (NSNumber *)minZoomScale
+{
+    if (!_minZoomScale) {
+        _minZoomScale = @1;
+    }
+    return _minZoomScale;
+}
+
+- (void)setMinZoomScale:(NSNumber *)minZoomScale
+{
+    _minZoomScale = minZoomScale;
+    self.minimumZoomScale = self.minZoomScale.floatValue;
 }
 
 @end

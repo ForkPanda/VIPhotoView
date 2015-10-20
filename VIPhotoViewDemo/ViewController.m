@@ -10,6 +10,7 @@
 #import "VIPhotoView.h"
 
 @interface ViewController ()
+@property (weak, nonatomic) IBOutlet VIPhotoView *scroll;
 
 @end
 
@@ -19,10 +20,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     UIImage *image = [UIImage imageNamed:@"test.jpg"];
-    VIPhotoView *photoView = [[VIPhotoView alloc] initWithFrame:self.view.bounds andImage:image];
-    photoView.autoresizingMask = (1 << 6) -1;
+    self.scroll.image = image;
     
-    [self.view addSubview:photoView];
 }
 
 - (void)viewDidLayoutSubviews

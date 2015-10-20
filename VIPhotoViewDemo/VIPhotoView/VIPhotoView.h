@@ -10,6 +10,9 @@
 
 @interface VIPhotoView : UIScrollView
 
-- (instancetype)initWithFrame:(CGRect)frame andImage:(UIImage *)image;
+@property (nonatomic, strong) UIImage *image;
+
+@property (nonatomic, strong) NSNumber *maxZoomScale;
+@property (nonatomic, strong) NSNumber *minZoomScale;
 
 @end
